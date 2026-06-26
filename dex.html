@@ -28,7 +28,6 @@
     color: #fff;
   }
 
-  /* ── CANVAS BACKGROUND ── */
   #bg {
     position: fixed;
     inset: 0;
@@ -36,7 +35,6 @@
     pointer-events: none;
   }
 
-  /* ── CURSOR GLOW ── */
   #glow {
     position: fixed;
     width: 320px; height: 320px;
@@ -48,7 +46,6 @@
     transition: opacity .4s;
   }
 
-  /* ── APP WRAPPER ── */
   #app {
     position: relative;
     z-index: 10;
@@ -58,7 +55,6 @@
     justify-content: center;
   }
 
-  /* ── CARD ── */
   .card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -77,7 +73,6 @@
     overflow: hidden;
   }
 
-  /* card shimmer top edge */
   .card::before {
     content: '';
     position: absolute;
@@ -87,7 +82,6 @@
     pointer-events: none;
   }
 
-  /* ── SCREENS ── */
   .screen {
     display: none;
     flex-direction: column;
@@ -102,7 +96,6 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* ── DECORATIVE PILL ── */
   .pill {
     display: inline-flex;
     align-items: center;
@@ -127,7 +120,6 @@
     0%,100% { opacity: 1; } 50% { opacity: .3; }
   }
 
-  /* ── HEADLINE ── */
   .headline {
     font-family: 'Playfair Display', serif;
     font-size: 2.4rem;
@@ -146,7 +138,6 @@
     background-clip: text;
   }
 
-  /* ── DOTS LOADER ── */
   .dots-row {
     display: flex;
     gap: .45rem;
@@ -166,7 +157,6 @@
     40%          { transform: scale(1.2); opacity: 1; }
   }
 
-  /* ── BUTTONS ── */
   .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -210,7 +200,6 @@
   }
   .btn-secondary:hover { background: rgba(255,255,255,.12); color: #fff; }
 
-  /* ── S2 friend text ── */
   .friend-reveal {
     font-family: 'Playfair Display', serif;
     font-size: 3.2rem;
@@ -228,7 +217,6 @@
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
   }
 
-  /* ── BUTTON ROW for yes/no ── */
   #btnRow {
     display: flex;
     gap: 1rem;
@@ -248,7 +236,6 @@
     z-index: 9999;
   }
 
-  /* ── YES screen ── */
   .big-emoji {
     font-size: 5.5rem;
     line-height: 1;
@@ -281,7 +268,6 @@
     animation: fadeSlideIn .5s .25s both;
   }
 
-  /* floating hearts portal */
   #heartsLayer {
     position: fixed;
     inset: 0;
@@ -303,14 +289,12 @@
     100% { opacity: 0; transform: translateY(-105vh) rotate(var(--r2)) scale(1.3); }
   }
 
-  /* ── DIVIDER ── */
   .divider {
     width: 100%;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--border), transparent);
   }
 
-  /* ── TAGLINE (s1 bottom) ── */
   .tagline {
     font-size: .8rem;
     color: rgba(255,255,255,.35);
@@ -318,7 +302,6 @@
     letter-spacing: .04em;
   }
 
-  /* ── decorative orbits in background of card ── */
   .orb {
     position: absolute;
     border-radius: 50%;
@@ -329,7 +312,6 @@
   .orb-pink  { width: 180px; height: 180px; background: rgba(244,63,138,.18); top: -60px; right: -60px; }
   .orb-purple{ width: 140px; height: 140px; background: rgba(192,132,252,.14); bottom: -40px; left: -40px; }
 
-  /* ── Media: reduced motion ── */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
@@ -346,7 +328,6 @@
     <div class="orb orb-pink"></div>
     <div class="orb orb-purple"></div>
 
-    <!-- ── SCREEN 1 ── -->
     <div class="screen active" id="s1">
       <div class="pill"><span class="dot"></span>a little message for you</div>
       <h1 class="headline">Will you be<br><em>my…</em></h1>
@@ -361,7 +342,6 @@
       <p class="tagline">tap to unveil the mystery ✦</p>
     </div>
 
-    <!-- ── SCREEN 2 ── -->
     <div class="screen" id="s2">
       <div class="pill"><span class="dot"></span>the big reveal</div>
       <div class="friend-reveal">…friends?</div>
@@ -373,7 +353,6 @@
         <button class="btn-primary" id="yesBtn" onclick="sayYes()">
           <span>💖</span> Yes, always!
         </button>
-        <!-- Removed onmouseover so the button only escapes when explicitly clicked -->
         <button class="btn-secondary" id="noBtn" onclick="runAway(event)">
           No thanks
         </button>
@@ -381,7 +360,6 @@
       <p class="tagline" id="noTaunt"></p>
     </div>
 
-    <!-- ── SCREEN 3 ── -->
     <div class="screen" id="s3">
       <div class="big-emoji">🥹</div>
       <div class="yay-headline">Awwwwww!</div>
@@ -396,20 +374,17 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-//  PARTICLE CANVAS BACKGROUND
-// ═══════════════════════════════════════════
 (function() {
   var canvas = document.getElementById('bg');
   var ctx = canvas.getContext('2d');
   var W, H, particles, lines, mouse = {x: -999, y: -999};
 
   var PALETTE = [
-    [244, 63, 138],   // rose
-    [192, 132, 252],  // lavender
-    [96, 165, 250],   // sky
-    [253, 164, 192],  // blush
-    [255, 255, 255],  // white
+    [244, 63, 138],
+    [192, 132, 252],
+    [96, 165, 250],
+    [253, 164, 192],
+    [255, 255, 255],
   ];
 
   function resize() {
@@ -439,7 +414,6 @@
     this.pulse += this.pulseSpeed;
     this.alpha = this.baseAlpha + Math.sin(this.pulse) * .12;
 
-    // mouse repel
     var dx = this.x - mouse.x;
     var dy = this.y - mouse.y;
     var dist = Math.sqrt(dx*dx + dy*dy);
@@ -449,11 +423,9 @@
       this.vy += (dy / dist) * force * .35;
     }
 
-    // dampen
     this.vx *= .985;
     this.vy *= .985;
 
-    // wrap
     if (this.x < -10) this.x = W + 10;
     if (this.x > W+10) this.x = -10;
     if (this.y < -10) this.y = H + 10;
@@ -470,7 +442,6 @@
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    // radial glow at mouse
     if (mouse.x > 0) {
       var grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 260);
       grd.addColorStop(0, 'rgba(244,63,138,.09)');
@@ -479,7 +450,6 @@
       ctx.fillRect(0, 0, W, H);
     }
 
-    // lines between nearby particles
     for (var i = 0; i < particles.length; i++) {
       for (var j = i+1; j < particles.length; j++) {
         var dx = particles[i].x - particles[j].x;
@@ -498,7 +468,6 @@
       }
     }
 
-    // particles
     for (var i = 0; i < particles.length; i++) {
       var p = particles[i];
       p.update();
@@ -525,7 +494,6 @@
     makeParticles(particleCount());
   });
 
-  // mouse / touch tracking
   window.addEventListener('mousemove', function(e) {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
@@ -540,9 +508,6 @@
   window.addEventListener('mouseleave', function() { mouse.x = -999; mouse.y = -999; });
 })();
 
-// ═══════════════════════════════════════════
-//  SCREEN LOGIC
-// ═══════════════════════════════════════════
 function goS2() {
   switchScreen('s1', 's2');
 }
@@ -551,13 +516,10 @@ function switchScreen(from, to) {
   var a = document.getElementById(from);
   var b = document.getElementById(to);
   a.classList.remove('active');
-  // small delay so animation replays
   setTimeout(function() { b.classList.add('active'); }, 40);
 }
 
-// ── NO BUTTON ESCAPE ──
 var noCount = 0;
-// FIXED SYNTAX ERROR HERE: Changed 'Maybe it\'s shy?' to "Maybe it's shy?" to prevent premature string closure
 var taunts = [
   'It keeps running away… 😂',
   'Slippery little button!',
@@ -572,7 +534,6 @@ function runAway(e) {
   noCount++;
   var btn = document.getElementById('noBtn');
   
-  // Detach the button from the card and attach it to the body so it can roam the whole screen
   if (!btn.classList.contains('escaped')) {
     var rect = btn.getBoundingClientRect();
     btn.style.left = rect.left + 'px';
@@ -580,7 +541,6 @@ function runAway(e) {
     document.body.appendChild(btn);
     btn.classList.add('escaped');
     
-    // Force a browser reflow so it transitions smoothly instead of teleporting instantly
     void btn.offsetWidth;
   }
 
@@ -600,9 +560,7 @@ function runAway(e) {
   if (noCount >= 8) btn.textContent = '✨ Still no!';
 }
 
-// ── YES ──
 function sayYes() {
-  // hide escaped no btn
   var noBtn = document.getElementById('noBtn');
   noBtn.style.display = 'none';
 
@@ -665,18 +623,15 @@ function playAwww() {
       o.stop(now + start + dur + .05);
     }
 
-    // "awwww" descending warm tones
     tone(530, 0,    .22, .20);
     tone(450, .18,  .55, .26);
     tone(390, .65,  .80, .22);
     tone(340, 1.35, .70, .16);
 
-    // soft harmony
     tone(665, .05, .18, .10, 'triangle');
     tone(560, .22, .50, .12, 'triangle');
     tone(480, .65, .70, .10, 'triangle');
 
-    // a little sparkle at the end
     [880, 1050, 1320].forEach(function(f, i) {
       tone(f, 1.1 + i*.12, .18, .06, 'sine');
     });
