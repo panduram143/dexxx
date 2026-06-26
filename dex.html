@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Will you be my friend?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --rose:    #f43f8a;
+    --blush:   #fda4c0;
+    --lavender:#c084fc;
+    --sky:     #60a5fa;
+    --cream:   #fff7f9;
+    --deep:    #1a0a14;
+    --card-bg: rgba(255,255,255,0.08);
+    --border:  rgba(255,255,255,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: 'DM Sans', sans-serif;
+    background: #0d0414;
+    color: #fff;
+  }
+
+  /* ── CANVAS BACKGROUND ── */
+  #bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ── CURSOR GLOW ── */
+  #glow {
+    position: fixed;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(244,63,138,.22) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity .4s;
+  }
+
+  /* ── APP WRAPPER ── */
+  #app {
+    position: relative;
+    z-index: 10;
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 3rem 2.6rem 2.6rem;
+    max-width: 420px;
+    width: calc(100% - 2rem);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.06),
+      0 32px 80px rgba(0,0,0,.45),
+      inset 0 1px 0 rgba(255,255,255,.12);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* card shimmer top edge */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255,255,255,.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.6rem;
+    animation: fadeSlideIn .55s cubic-bezier(.22,.68,0,1.2) both;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(24px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── DECORATIVE PILL ── */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    background: rgba(244,63,138,.12);
+    border: 1px solid rgba(244,63,138,.3);
+    border-radius: 999px;
+    padding: .3rem .9rem;
+    font-size: .72rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--blush);
+  }
+  .pill .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--rose);
+    animation: blinkDot 1.6s ease-in-out infinite;
+  }
+  @keyframes blinkDot {
+    0%,100% { opacity: 1; } 50% { opacity: .3; }
+  }
+
+  /* ── HEADLINE ── */
+  .headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #fff 30%, var(--blush) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -.02em;
+  }
+  .headline em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--blush) 0%, var(--lavender) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  /* ── DOTS LOADER ── */
+  .dots-row {
+    display: flex;
+    gap: .45rem;
+    justify-content: center;
+    margin: -.4rem 0;
+  }
+  .dots-row span {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--rose);
+    animation: dotBounce 1.2s ease-in-out infinite;
+  }
+  .dots-row span:nth-child(2) { animation-delay: .18s; background: var(--lavender); }
+  .dots-row span:nth-child(3) { animation-delay: .36s; background: var(--sky); }
+  @keyframes dotBounce {
+    0%,80%,100% { transform: scale(.6); opacity: .4; }
+    40%          { transform: scale(1.2); opacity: 1; }
+  }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .85rem 2rem;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, var(--rose) 0%, #c026a8 100%);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(244,63,138,.45), 0 1px 0 rgba(255,255,255,.15) inset;
+    transition: transform .18s, box-shadow .18s;
+    letter-spacing: .01em;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 36px rgba(244,63,138,.6);
+  }
+  .btn-primary:active { transform: scale(.97); }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .75rem 1.8rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.2);
+    background: rgba(255,255,255,.07);
+    color: rgba(255,255,255,.7);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background .2s, color .2s, transform .15s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+  /* ── S2 friend text ── */
+  .friend-reveal {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.2rem;
+    font-style: italic;
+    font-weight: 400;
+    background: linear-gradient(135deg, var(--blush) 0%, var(--lavender) 60%, var(--sky) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: popIn .6s cubic-bezier(.34,1.56,.64,1) both;
+    line-height: 1.1;
+  }
+  @keyframes popIn {
+    0%   { transform: scale(.3) rotate(-6deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  /* ── BUTTON ROW for yes/no ── */
+  #btnRow {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    min-height: 56px;
+    width: 100%;
+  }
+
+  #noBtn {
+    position: static;
+  }
+  #noBtn.escaped {
+    position: fixed;
+    transition: left .22s cubic-bezier(.22,.68,0,1.2), top .22s cubic-bezier(.22,.68,0,1.2);
+    z-index: 9999;
+  }
+
+  /* ── YES screen ── */
+  .big-emoji {
+    font-size: 5.5rem;
+    line-height: 1;
+    animation: heartbeat .85s ease-in-out infinite;
+    filter: drop-shadow(0 0 32px rgba(244,63,138,.7));
+  }
+  @keyframes heartbeat {
+    0%,100% { transform: scale(1); }
+    14%      { transform: scale(1.18); }
+    28%      { transform: scale(1); }
+    42%      { transform: scale(1.1); }
+    56%      { transform: scale(1); }
+  }
+
+  .yay-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-style: italic;
+    background: linear-gradient(135deg, #fff 0%, var(--blush) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeSlideIn .5s .1s both;
+  }
+
+  .yay-sub {
+    font-size: .95rem;
+    color: rgba(255,255,255,.55);
+    font-weight: 300;
+    animation: fadeSlideIn .5s .25s both;
+  }
+
+  /* floating hearts portal */
+  #heartsLayer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+    overflow: hidden;
+  }
+  .fheart {
+    position: absolute;
+    bottom: -40px;
+    font-size: 1.8rem;
+    animation: floatHeart var(--d) ease-in var(--delay) forwards;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  @keyframes floatHeart {
+    0%   { opacity: 1; transform: translateY(0) rotate(var(--r)) scale(.5); }
+    80%  { opacity: .9; }
+    100% { opacity: 0; transform: translateY(-105vh) rotate(var(--r2)) scale(1.3); }
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  /* ── TAGLINE (s1 bottom) ── */
+  .tagline {
+    font-size: .8rem;
+    color: rgba(255,255,255,.35);
+    font-weight: 300;
+    letter-spacing: .04em;
+  }
+
+  /* ── decorative orbits in background of card ── */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(50px);
+  }
+  .orb-pink  { width: 180px; height: 180px; background: rgba(244,63,138,.18); top: -60px; right: -60px; }
+  .orb-purple{ width: 140px; height: 140px; background: rgba(192,132,252,.14); bottom: -40px; left: -40px; }
+
+  /* ── Media: reduced motion ── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<div id="glow"></div>
+<div id="heartsLayer"></div>
+
+<div id="app">
+  <div class="card">
+    <div class="orb orb-pink"></div>
+    <div class="orb orb-purple"></div>
+
+    <!-- ── SCREEN 1 ── -->
+    <div class="screen active" id="s1">
+      <div class="pill"><span class="dot"></span>a little message for you</div>
+      <h1 class="headline">Will you be<br><em>my…</em></h1>
+      <div class="dots-row">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="divider"></div>
+      <button class="btn-primary" onclick="goS2()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Click to see more
+      </button>
+      <p class="tagline">tap to unveil the mystery ✦</p>
+    </div>
+
+    <!-- ── SCREEN 2 ── -->
+    <div class="screen" id="s2">
+      <div class="pill"><span class="dot"></span>the big reveal</div>
+      <div class="friend-reveal">…friends?</div>
+      <p style="font-size:.95rem;color:rgba(255,255,255,.55);font-weight:300;line-height:1.6">
+        Life's better with good people in it.<br>Could you be one of mine?
+      </p>
+      <div class="divider"></div>
+      <div id="btnRow">
+        <button class="btn-primary" id="yesBtn" onclick="sayYes()">
+          <span>💖</span> Yes, always!
+        </button>
+        <!-- Removed onmouseover so the button only escapes when explicitly clicked -->
+        <button class="btn-secondary" id="noBtn" onclick="runAway(event)">
+          No thanks
+        </button>
+      </div>
+      <p class="tagline" id="noTaunt"></p>
+    </div>
+
+    <!-- ── SCREEN 3 ── -->
+    <div class="screen" id="s3">
+      <div class="big-emoji">🥹</div>
+      <div class="yay-headline">Awwwwww!</div>
+      <p class="yay-sub">You just made my whole day 💕<br>Friends forever, okay?</p>
+      <div class="divider"></div>
+      <p style="font-size:2rem;letter-spacing:.3em;animation:fadeSlideIn .5s .4s both">
+        💗 💜 💙 💛 🧡
+      </p>
+      <p class="tagline" style="animation:fadeSlideIn .5s .6s both">thank you for existing ✦</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  PARTICLE CANVAS BACKGROUND
+// ═══════════════════════════════════════════
+(function() {
+  var canvas = document.getElementById('bg');
+  var ctx = canvas.getContext('2d');
+  var W, H, particles, lines, mouse = {x: -999, y: -999};
+
+  var PALETTE = [
+    [244, 63, 138],   // rose
+    [192, 132, 252],  // lavender
+    [96, 165, 250],   // sky
+    [253, 164, 192],  // blush
+    [255, 255, 255],  // white
+  ];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function Particle() {
+    this.reset();
+  }
+  Particle.prototype.reset = function() {
+    this.x  = Math.random() * W;
+    this.y  = Math.random() * H;
+    this.vx = (Math.random() - .5) * .55;
+    this.vy = (Math.random() - .5) * .55;
+    this.r  = Math.random() * 2.2 + .6;
+    var c   = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+    this.rgb = c;
+    this.alpha = Math.random() * .55 + .15;
+    this.baseAlpha = this.alpha;
+    this.pulse = Math.random() * Math.PI * 2;
+    this.pulseSpeed = .008 + Math.random() * .018;
+  };
+  Particle.prototype.update = function() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.pulse += this.pulseSpeed;
+    this.alpha = this.baseAlpha + Math.sin(this.pulse) * .12;
+
+    // mouse repel
+    var dx = this.x - mouse.x;
+    var dy = this.y - mouse.y;
+    var dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 110) {
+      var force = (110 - dist) / 110;
+      this.vx += (dx / dist) * force * .35;
+      this.vy += (dy / dist) * force * .35;
+    }
+
+    // dampen
+    this.vx *= .985;
+    this.vy *= .985;
+
+    // wrap
+    if (this.x < -10) this.x = W + 10;
+    if (this.x > W+10) this.x = -10;
+    if (this.y < -10) this.y = H + 10;
+    if (this.y > H+10) this.y = -10;
+  };
+
+  function makeParticles(n) {
+    particles = [];
+    for (var i = 0; i < n; i++) particles.push(new Particle());
+  }
+
+  var LINE_DIST = 120;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // radial glow at mouse
+    if (mouse.x > 0) {
+      var grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 260);
+      grd.addColorStop(0, 'rgba(244,63,138,.09)');
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // lines between nearby particles
+    for (var i = 0; i < particles.length; i++) {
+      for (var j = i+1; j < particles.length; j++) {
+        var dx = particles[i].x - particles[j].x;
+        var dy = particles[i].y - particles[j].y;
+        var d  = Math.sqrt(dx*dx + dy*dy);
+        if (d < LINE_DIST) {
+          var a = (1 - d/LINE_DIST) * .18;
+          var c = particles[i].rgb;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';
+          ctx.lineWidth = .6;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // particles
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.update();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba('+p.rgb[0]+','+p.rgb[1]+','+p.rgb[2]+','+p.alpha+')';
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  function particleCount() {
+    var area = window.innerWidth * window.innerHeight;
+    return Math.min(160, Math.max(60, Math.floor(area / 8000)));
+  }
+
+  resize();
+  makeParticles(particleCount());
+  draw();
+
+  window.addEventListener('resize', function() {
+    resize();
+    makeParticles(particleCount());
+  });
+
+  // mouse / touch tracking
+  window.addEventListener('mousemove', function(e) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    document.getElementById('glow').style.left = e.clientX + 'px';
+    document.getElementById('glow').style.top  = e.clientY + 'px';
+  });
+  window.addEventListener('touchmove', function(e) {
+    var t = e.touches[0];
+    mouse.x = t.clientX;
+    mouse.y = t.clientY;
+  }, {passive: true});
+  window.addEventListener('mouseleave', function() { mouse.x = -999; mouse.y = -999; });
+})();
+
+// ═══════════════════════════════════════════
+//  SCREEN LOGIC
+// ═══════════════════════════════════════════
+function goS2() {
+  switchScreen('s1', 's2');
+}
+
+function switchScreen(from, to) {
+  var a = document.getElementById(from);
+  var b = document.getElementById(to);
+  a.classList.remove('active');
+  // small delay so animation replays
+  setTimeout(function() { b.classList.add('active'); }, 40);
+}
+
+// ── NO BUTTON ESCAPE ──
+var noCount = 0;
+// FIXED SYNTAX ERROR HERE: Changed 'Maybe it\'s shy?' to "Maybe it's shy?" to prevent premature string closure
+var taunts = [
+  'It keeps running away… 😂',
+  'Slippery little button!',
+  'Almost got it… 👀',
+  "Maybe it's shy?", 
+  'The button disagrees 🏃',
+  'Give up and say yes!',
+  'It will never stop moving 😈'
+];
+
+function runAway(e) {
+  noCount++;
+  var btn = document.getElementById('noBtn');
+  
+  // Detach the button from the card and attach it to the body so it can roam the whole screen
+  if (!btn.classList.contains('escaped')) {
+    var rect = btn.getBoundingClientRect();
+    btn.style.left = rect.left + 'px';
+    btn.style.top = rect.top + 'px';
+    document.body.appendChild(btn);
+    btn.classList.add('escaped');
+    
+    // Force a browser reflow so it transitions smoothly instead of teleporting instantly
+    void btn.offsetWidth;
+  }
+
+  var bw = btn.offsetWidth;
+  var bh = btn.offsetHeight;
+  var maxX = window.innerWidth  - bw  - 12;
+  var maxY = window.innerHeight - bh  - 12;
+  var nx = Math.max(8, Math.floor(Math.random() * maxX));
+  var ny = Math.max(8, Math.floor(Math.random() * maxY));
+  btn.style.left = nx + 'px';
+  btn.style.top  = ny + 'px';
+
+  var idx = Math.min(noCount - 1, taunts.length - 1);
+  document.getElementById('noTaunt').textContent = taunts[idx];
+
+  if (noCount >= 5) btn.textContent = '🏃 Nope!';
+  if (noCount >= 8) btn.textContent = '✨ Still no!';
+}
+
+// ── YES ──
+function sayYes() {
+  // hide escaped no btn
+  var noBtn = document.getElementById('noBtn');
+  noBtn.style.display = 'none';
+
+  switchScreen('s2', 's3');
+  launchHearts();
+  playAwww();
+}
+
+function launchHearts() {
+  var layer = document.getElementById('heartsLayer');
+  var emojis = ['❤️','🧡','💛','💚','💙','💜','🩷','🩵','🤍','💖','💗','💓','💞','💕','🌸','✨','🦋','🌟'];
+
+  function burst(count, delay0) {
+    for (var i = 0; i < count; i++) {
+      (function(i) {
+        setTimeout(function() {
+          var h = document.createElement('div');
+          h.className = 'fheart';
+          h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          var leftPct = 2 + Math.random() * 96;
+          h.style.left = leftPct + '%';
+          h.style.fontSize = (1.1 + Math.random() * 2.2) + 'rem';
+          var dur = (2.4 + Math.random() * 2.5).toFixed(2);
+          h.style.setProperty('--d', dur + 's');
+          h.style.setProperty('--delay', '0s');
+          var rot  = (Math.random()*60-30) + 'deg';
+          var rot2 = (Math.random()*120-60) + 'deg';
+          h.style.setProperty('--r', rot);
+          h.style.setProperty('--r2', rot2);
+          layer.appendChild(h);
+          setTimeout(function(){ h.remove(); }, (parseFloat(dur)+.3)*1000);
+        }, delay0 + i * 55);
+      })(i);
+    }
+  }
+
+  burst(30, 0);
+  burst(20, 1800);
+  burst(15, 3400);
+}
+
+function playAwww() {
+  try {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    var ctx = new AC();
+
+    function tone(freq, start, dur, vol, type) {
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      var now = ctx.currentTime;
+      o.connect(g); g.connect(ctx.destination);
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, now + start);
+      o.frequency.exponentialRampToValueAtTime(freq * .82, now + start + dur);
+      g.gain.setValueAtTime(0, now + start);
+      g.gain.linearRampToValueAtTime(vol, now + start + .06);
+      g.gain.exponentialRampToValueAtTime(.0001, now + start + dur);
+      o.start(now + start);
+      o.stop(now + start + dur + .05);
+    }
+
+    // "awwww" descending warm tones
+    tone(530, 0,    .22, .20);
+    tone(450, .18,  .55, .26);
+    tone(390, .65,  .80, .22);
+    tone(340, 1.35, .70, .16);
+
+    // soft harmony
+    tone(665, .05, .18, .10, 'triangle');
+    tone(560, .22, .50, .12, 'triangle');
+    tone(480, .65, .70, .10, 'triangle');
+
+    // a little sparkle at the end
+    [880, 1050, 1320].forEach(function(f, i) {
+      tone(f, 1.1 + i*.12, .18, .06, 'sine');
+    });
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
